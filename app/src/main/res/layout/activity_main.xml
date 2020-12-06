@@ -11,9 +11,18 @@
         android:id="@+id/testApiRequest"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="get api"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="28dp"
+        android:text="Refresh data"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="558dp"
+        android:layout_marginTop="97dp"
+        app:layout_constraintTop_toBottomOf="@+id/testApiRequest" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
