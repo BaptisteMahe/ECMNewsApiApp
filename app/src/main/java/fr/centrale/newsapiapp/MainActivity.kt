@@ -3,6 +3,8 @@ package fr.centrale.newsapiapp
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Button
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -29,12 +31,30 @@ class MainActivity : AppCompatActivity() {
 
         queue = Volley.newRequestQueue(this)
         getSources()
+    }
 
-        val testApiRequestButton = findViewById<Button>(R.id.testApiRequest)
-        testApiRequestButton.setOnClickListener{
-            getArticles(sources.getJSONObject(0).getString("id"), 1)
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+        menuInflater.inflate(R.menu.menu_layout, menu)
+        return true
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        super.onPrepareOptionsMenu(menu)
+        if (sources.length() > 0) {
+            menu?.clear()
         }
+        for (index in 0 until sources.length()) {
+            menu?.add(0, index, index, sources.getJSONObject(index).getString("name"))
+        }
+        return true
+    }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        super.onOptionsItemSelected(item)
+        getArticles(sources.getJSONObject(item.itemId).getString("id"), 1)
+        Log.d("TAG", item.itemId.toString())
+        return true
     }
 
     private fun getSources() {
@@ -79,6 +99,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun formatDataSet(articles: JSONArray) {
+        articlesData = ArrayList<ArticlePreview>()
         Log.d("TAG", articles.toString())
             for (index in 0 until articles.length()) {
                 val article = articles.getJSONObject(index)
