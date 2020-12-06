@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.squareup.picasso.Picasso
 
 class CustomAdapter(private val dataSet: ArrayList<ArticlePreview>)
     : RecyclerView.Adapter<CustomAdapter.ViewHolder>()  {
@@ -37,7 +38,7 @@ class CustomAdapter(private val dataSet: ArrayList<ArticlePreview>)
         viewHolder.txtTitle.text = dataSet[position].title
         viewHolder.txtAuthor.text = dataSet[position].author
         viewHolder.txtDate.text = dataSet[position].date
-        // viewHolder.imagePreview = dataSet[position].image
+        Picasso.get().load(dataSet[position].urlToImage).into(viewHolder.imagePreview)
     }
 
     override fun getItemCount() = dataSet.size

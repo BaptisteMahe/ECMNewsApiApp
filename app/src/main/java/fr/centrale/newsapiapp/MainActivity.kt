@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity() {
         Log.d("TAG", articles.toString())
             for (index in 0 until articles.length()) {
                 val article = articles.getJSONObject(index)
-                val articlePreview = ArticlePreview(article.getString("title"), article.getString("author"), article.getString("publishedAt"))
+                val articlePreview = ArticlePreview(article.getString("title"), article.getString("author"), article.getString("publishedAt"), article.getString("urlToImage"))
                 articlesData.add(articlePreview)
             }
     }
