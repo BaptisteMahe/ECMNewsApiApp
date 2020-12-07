@@ -35,16 +35,29 @@ class CustomAdapter(private val dataSet: ArrayList<ArticlePreview>,
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(viewGroup.context)
-            .inflate(R.layout.article_preview, viewGroup, false)
-        return ViewHolder(view, mOnArticleListener)
+        return if (viewType == 0) {
+            ViewHolder(view.inflate(R.layout.article_preview_img_left, viewGroup, false), mOnArticleListener)
+        } else {
+            ViewHolder(view.inflate(R.layout.article_preview_img_right, viewGroup, false), mOnArticleListener)
+        }
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
         viewHolder.txtTitle.text = dataSet[position].title
         viewHolder.txtAuthor.text = dataSet[position].author
         viewHolder.txtDate.text = dataSet[position].date
-        Picasso.get().load(dataSet[position].urlToImage).into(viewHolder.imagePreview)
+
+        if(dataSet[position].urlToImage == "null") {
+            Picasso.get().load("https://hlfppt.org/wp-content/uploads/2017/04/placeholder.png").into(viewHolder.imagePreview)
+        } else {
+            Picasso.get().load(dataSet[position].urlToImage).into(viewHolder.imagePreview)
+        }
+
     }
 
     override fun getItemCount() = dataSet.size
+
+    override fun getItemViewType(position: Int): Int {
+        return position % 2
+    }
 }
