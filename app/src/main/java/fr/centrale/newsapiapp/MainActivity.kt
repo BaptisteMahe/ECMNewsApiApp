@@ -15,10 +15,10 @@ import org.json.JSONArray
 
 class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
 
-    val SOURCES_URL = "https://newsapi.org/v2/sources?apiKey=d31f5fa5f03443dd8a1b9e3fde92ec34&language=fr"
+    val SOURCES_URL = "https://newsapi.org/v2/sources?apiKey=ea196d76d15741938a5ad4f6ee7aad95&language=fr"
     var sources = JSONArray()
     var currentSourceId = ""
-    val BASE_ARTICLES_URL = "https://newsapi.org/v2/everything?apiKey=d31f5fa5f03443dd8a1b9e3fde92ec34&language=fr"
+    val BASE_ARTICLES_URL = "https://newsapi.org/v2/everything?apiKey=ea196d76d15741938a5ad4f6ee7aad95&language=fr"
     var articlesData = ArrayList<ArticlePreview>()
     var currentPage = 1
 
@@ -132,14 +132,8 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
         }
         for (index in 0 until articles.length()) {
             val article = articles.getJSONObject(index)
-            Log.d("ARTICLE", article.toString())
-            val articlePreview = ArticlePreview(article.getString("title"),
-                article.getString("author"),
-                article.getString("publishedAt").subSequence(0,10).toString(),
-                article.getJSONObject("source").getString("name"),
-                article.getString("description"),
-                article.getString("url"),
-                article.getString("urlToImage"))
+            //Log.d("ARTICLE", article.toString())
+            val articlePreview = ArticlePreview(article)
             articlesData.add(articlePreview)
         }
     }
@@ -158,8 +152,9 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (!recyclerView.canScrollVertically(1)) {
-                    currentPage += 1
-                    getArticles(currentSourceId, currentPage, false)
+                    Log.d("RECYCLER_VIEW", "Bottom")
+                    // currentPage += 1
+                    // getArticles(currentSourceId, currentPage, false)
                 }
             }
         })

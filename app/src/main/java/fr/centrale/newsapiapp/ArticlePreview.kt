@@ -1,5 +1,7 @@
 package fr.centrale.newsapiapp
 
+import org.json.JSONObject
+
 class ArticlePreview {
     var title: String = ""
     var author: String = ""
@@ -11,19 +13,13 @@ class ArticlePreview {
 
     constructor() {}
 
-    constructor(title: String,
-                author: String,
-                date: String,
-                sourceName: String,
-                description: String,
-                link: String,
-                urlToImage: String?) {
-        this.title = title
-        this.author = author
-        this.date = date
-        this.sourceName = sourceName
-        this.description = description
-        this.link = link
-        this.urlToImage = urlToImage
+    constructor(article: JSONObject) {
+        this.title = article.getString("title")
+        this.author = article.getString("author")
+        this.date = article.getString("publishedAt").subSequence(0,10).toString()
+        this.sourceName = article.getJSONObject("source").getString("name")
+        this.description = article.getString("description")
+        this.link = article.getString("url")
+        this.urlToImage = article.getString("urlToImage")
     }
 }
