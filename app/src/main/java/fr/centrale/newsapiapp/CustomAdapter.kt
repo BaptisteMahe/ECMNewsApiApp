@@ -12,6 +12,8 @@ class CustomAdapter(private val dataSet: ArrayList<ArticlePreview>,
                     private val mOnArticleListener: OnArticleListener)
     : RecyclerView.Adapter<CustomAdapter.ViewHolder>()  {
 
+    private val imgPlaceholder = Picasso.get().load("https://hlfppt.org/wp-content/uploads/2017/04/placeholder.png")
+
     class ViewHolder(view: View, onArticleListener: OnArticleListener): RecyclerView.ViewHolder(view) {
         val txtTitle: TextView
         val txtAuthor: TextView
@@ -48,7 +50,7 @@ class CustomAdapter(private val dataSet: ArrayList<ArticlePreview>,
         viewHolder.txtDate.text = dataSet[position].date
 
         if(dataSet[position].urlToImage == "null") {
-            Picasso.get().load("https://hlfppt.org/wp-content/uploads/2017/04/placeholder.png").into(viewHolder.imagePreview)
+            imgPlaceholder.into(viewHolder.imagePreview)
         } else {
             Picasso.get().load(dataSet[position].urlToImage).into(viewHolder.imagePreview)
         }
