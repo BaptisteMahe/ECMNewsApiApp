@@ -20,6 +20,7 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
     var currentSourceId = ""
     val BASE_ARTICLES_URL = "https://newsapi.org/v2/everything?apiKey=d31f5fa5f03443dd8a1b9e3fde92ec34&language=fr"
     var articlesData = ArrayList<ArticlePreview>()
+    var currentPage = 1
 
     lateinit var queue: RequestQueue
     lateinit var recyclerView: RecyclerView
@@ -58,7 +59,8 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         super.onOptionsItemSelected(item)
         currentSourceId = sources.getJSONObject(item.itemId).getString("id")
-        getArticles(currentSourceId, 1)
+        currentPage = 1
+        getArticles(currentSourceId, currentPage, true)
         return true
     }
 
@@ -82,9 +84,11 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
                 sources = response.getJSONArray("sources")
                 if(savedSourceId != null) {
                     Log.d("SOURCEID", savedSourceId)
-                    getArticles(savedSourceId, 1)
+                    currentSourceId = savedSourceId
+                    getArticles(currentSourceId, currentPage, true)
                 } else {
-                    getArticles(sources.getJSONObject(0).getString("id"), 1)
+                    currentSourceId = sources.getJSONObject(0).getString("id")
+                    getArticles(currentSourceId, currentPage, true)
                 }
             },
             { error ->
@@ -100,12 +104,12 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
         queue.add(sourcesRequest)
     }
 
-    private fun getArticles(sourceId: String, page: Number) {
+    private fun getArticles(sourceId: String, page: Number, resetData: Boolean) {
         val url = "$BASE_ARTICLES_URL&sources=$sourceId&page=$page"
         val articlesRequest = object: JsonObjectRequest(
             Request.Method.GET, url + sourceId, null,
             { response ->
-                formatDataSet(response.getJSONArray("articles"))
+                formatDataSet(response.getJSONArray("articles"), resetData)
                 Log.d("ARTICLES", response.getJSONArray("articles").toString())
                 setUpRecyclerView()
             },
@@ -122,20 +126,22 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
         queue.add(articlesRequest)
     }
 
-    private fun formatDataSet(articles: JSONArray) {
-        articlesData = ArrayList()
-            for (index in 0 until articles.length()) {
-                val article = articles.getJSONObject(index)
-                Log.d("ARTICLE", article.toString())
-                val articlePreview = ArticlePreview(article.getString("title"),
-                    article.getString("author"),
-                    article.getString("publishedAt").subSequence(0,10).toString(),
-                    article.getJSONObject("source").getString("name"),
-                    article.getString("description"),
-                    article.getString("url"),
-                    article.getString("urlToImage"))
-                articlesData.add(articlePreview)
-            }
+    private fun formatDataSet(articles: JSONArray, resetData: Boolean) {
+        if (resetData) {
+            articlesData = ArrayList()
+        }
+        for (index in 0 until articles.length()) {
+            val article = articles.getJSONObject(index)
+            Log.d("ARTICLE", article.toString())
+            val articlePreview = ArticlePreview(article.getString("title"),
+                article.getString("author"),
+                article.getString("publishedAt").subSequence(0,10).toString(),
+                article.getJSONObject("source").getString("name"),
+                article.getString("description"),
+                article.getString("url"),
+                article.getString("urlToImage"))
+            articlesData.add(articlePreview)
+        }
     }
 
     private fun setUpRecyclerView() {
@@ -147,6 +153,15 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
             layoutManager = viewManager
             adapter = viewAdapter
         }
-        recyclerView
+
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if (!recyclerView.canScrollVertically(1)) {
+                    currentPage += 1
+                    getArticles(currentSourceId, currentPage, false)
+                }
+            }
+        })
     }
 }
