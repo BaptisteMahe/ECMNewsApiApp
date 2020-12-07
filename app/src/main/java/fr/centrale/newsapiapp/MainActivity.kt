@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ProgressBar
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.Request
@@ -26,10 +28,12 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
     lateinit var recyclerView: RecyclerView
     lateinit var viewManager: LinearLayoutManager
     lateinit var viewAdapter: CustomAdapter
+    lateinit var loadingBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        loadingBar = findViewById<ProgressBar>(R.id.loadingBar)
         queue = Volley.newRequestQueue(this)
         getSources(savedInstanceState?.getString("sourceId"))
     }
@@ -78,6 +82,7 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
     }
 
     private fun getSources(savedSourceId: String?) {
+        loadingBar.isVisible = true
         val sourcesRequest = object: JsonObjectRequest(
             Request.Method.GET, SOURCES_URL, null,
             { response ->
@@ -85,6 +90,7 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
                 if(savedSourceId != null) {
                     Log.d("SOURCEID", savedSourceId)
                     currentSourceId = savedSourceId
+                    loadingBar.isVisible = false
                     getArticles(currentSourceId, currentPage, true)
                 } else {
                     currentSourceId = sources.getJSONObject(0).getString("id")
@@ -106,12 +112,14 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
 
     private fun getArticles(sourceId: String, page: Number, resetData: Boolean) {
         val url = "$BASE_ARTICLES_URL&sources=$sourceId&page=$page"
+        loadingBar.isVisible = true
         val articlesRequest = object: JsonObjectRequest(
             Request.Method.GET, url + sourceId, null,
             { response ->
                 formatDataSet(response.getJSONArray("articles"), resetData)
                 Log.d("ARTICLES", response.getJSONArray("articles").toString())
                 setUpRecyclerView()
+                loadingBar.isVisible = false
             },
             { error ->
                 Log.d("TAG", "Something went wrong: $error") })
