@@ -1,11 +1,11 @@
 package fr.centrale.newsapiapp
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Button
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.Request
@@ -13,10 +13,11 @@ import com.android.volley.RequestQueue
 import com.android.volley.toolbox.*
 import org.json.JSONArray
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
 
     val SOURCES_URL = "https://newsapi.org/v2/sources?apiKey=d31f5fa5f03443dd8a1b9e3fde92ec34&language=fr"
     var sources = JSONArray()
+    var currentSourceId = ""
     val BASE_ARTICLES_URL = "https://newsapi.org/v2/everything?apiKey=d31f5fa5f03443dd8a1b9e3fde92ec34&language=fr"
     var articlesData = ArrayList<ArticlePreview>()
 
@@ -28,15 +29,19 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         queue = Volley.newRequestQueue(this)
-        getSources()
+        getSources(savedInstanceState?.getString("sourceId"))
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         super.onCreateOptionsMenu(menu)
         menuInflater.inflate(R.menu.menu_layout, menu)
         return true
+    }
+
+    override fun onSaveInstanceState(savedInstanceState: Bundle) {
+        savedInstanceState.putString("sourceId", currentSourceId)
+        super.onSaveInstanceState(savedInstanceState)
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
@@ -52,17 +57,34 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         super.onOptionsItemSelected(item)
-        getArticles(sources.getJSONObject(item.itemId).getString("id"), 1)
-        Log.d("TAG", item.itemId.toString())
+        currentSourceId = sources.getJSONObject(item.itemId).getString("id")
+        getArticles(currentSourceId, 1)
         return true
     }
 
-    private fun getSources() {
+    override fun onArticleClick(position: Int) {
+        val article = articlesData[position]
+        val monIntent = Intent(this, ArticleActivity::class.java)
+        monIntent.putExtra("title", "title")
+        monIntent.putExtra("author", "author")
+        monIntent.putExtra("date", "date")
+        monIntent.putExtra("source", "description")
+        monIntent.putExtra("urlToImage", "urlToImage")
+        monIntent.putExtra("link", "link")
+        startActivity(monIntent)
+    }
+
+    private fun getSources(savedSourceId: String?) {
         val sourcesRequest = object: JsonObjectRequest(
             Request.Method.GET, SOURCES_URL, null,
             { response ->
                 sources = response.getJSONArray("sources")
-                Log.d("RECEIVED_SOURCES", sources.toString())
+                if(savedSourceId != null) {
+                    Log.d("SOURCEID", savedSourceId)
+                    getArticles(savedSourceId, 1)
+                } else {
+                    getArticles(sources.getJSONObject(0).getString("id"), 1)
+                }
             },
             { error ->
                 Log.d("TAG", "Something went wrong: $error") })
@@ -83,6 +105,7 @@ class MainActivity : AppCompatActivity() {
             Request.Method.GET, url + sourceId, null,
             { response ->
                 formatDataSet(response.getJSONArray("articles"))
+                Log.d("ARTICLES", response.getJSONArray("articles").toString())
                 setUpRecyclerView()
             },
             { error ->
@@ -99,8 +122,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun formatDataSet(articles: JSONArray) {
-        articlesData = ArrayList<ArticlePreview>()
-        Log.d("TAG", articles.toString())
+        articlesData = ArrayList()
             for (index in 0 until articles.length()) {
                 val article = articles.getJSONObject(index)
                 val articlePreview = ArticlePreview(article.getString("title"), article.getString("author"), article.getString("publishedAt"), article.getString("urlToImage"))
@@ -110,12 +132,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun setUpRecyclerView() {
         viewManager = LinearLayoutManager(this)
-        viewAdapter = CustomAdapter(articlesData)
+        viewAdapter = CustomAdapter(articlesData, this)
 
         recyclerView = findViewById<RecyclerView>(R.id.recyclerView).apply {
             setHasFixedSize(true)
             layoutManager = viewManager
             adapter = viewAdapter
         }
+        recyclerView
     }
 }
