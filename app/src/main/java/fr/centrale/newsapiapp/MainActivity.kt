@@ -127,7 +127,13 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
             for (index in 0 until articles.length()) {
                 val article = articles.getJSONObject(index)
                 Log.d("ARTICLE", article.toString())
-                val articlePreview = ArticlePreview(article.getString("title"), article.getString("author"), article.getString("publishedAt"), article.getJSONObject("source").getString("name"), article.getString("description"), article.getString("url"), article.getString("urlToImage"))
+                val articlePreview = ArticlePreview(article.getString("title"),
+                    article.getString("author"),
+                    article.getString("publishedAt").subSequence(0,10).toString(),
+                    article.getJSONObject("source").getString("name"),
+                    article.getString("description"),
+                    article.getString("url"),
+                    article.getString("urlToImage"))
                 articlesData.add(articlePreview)
             }
     }

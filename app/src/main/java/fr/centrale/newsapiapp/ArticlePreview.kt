@@ -11,7 +11,13 @@ class ArticlePreview {
 
     constructor() {}
 
-    constructor(title: String, author: String, date: String, sourceName: String, description: String, link: String, urlToImage: String?) {
+    constructor(title: String,
+                author: String,
+                date: String,
+                sourceName: String,
+                description: String,
+                link: String,
+                urlToImage: String?) {
         this.title = title
         this.author = author
         this.date = date
