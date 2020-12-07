@@ -11,7 +11,8 @@
         android:roundIcon="@mipmap/ic_launcher_fake_news_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.NewsApiApp">
-        <activity android:name=".ArticleActivity"></activity>
+        <activity android:name=".WebViewActivity"></activity>
+        <activity android:name=".ArticleActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

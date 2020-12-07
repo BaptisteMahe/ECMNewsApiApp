@@ -74,15 +74,15 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
 
     override fun onArticleClick(position: Int) {
         val article = articlesData[position]
-        val monIntent = Intent(this, ArticleActivity::class.java)
-        monIntent.putExtra("title", article.title)
-        monIntent.putExtra("author", article.author)
-        monIntent.putExtra("date", article.date)
-        monIntent.putExtra("sourceName", article.sourceName)
-        monIntent.putExtra("description", article.description)
-        monIntent.putExtra("link", article.link)
-        monIntent.putExtra("urlToImage", article.urlToImage)
-        startActivity(monIntent)
+        val articleIntent = Intent(this, ArticleActivity::class.java)
+        articleIntent.putExtra("title", article.title)
+        articleIntent.putExtra("author", article.author)
+        articleIntent.putExtra("date", article.date)
+        articleIntent.putExtra("sourceName", article.sourceName)
+        articleIntent.putExtra("description", article.description)
+        articleIntent.putExtra("link", article.link)
+        articleIntent.putExtra("urlToImage", article.urlToImage)
+        startActivity(articleIntent)
     }
 
     private fun setUpAlertDialogBuilder() {
