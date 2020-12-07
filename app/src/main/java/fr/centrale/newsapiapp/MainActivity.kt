@@ -145,7 +145,7 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
         val url = "$BASE_ARTICLES_URL&sources=$sourceId&page=$page"
         loadingBar.isVisible = true
         val articlesRequest = object: JsonObjectRequest(
-            Request.Method.GET, url + sourceId, null,
+            Request.Method.GET, url, null,
             { response ->
                 if(response.getJSONArray("articles").length() == 0) {
                     showAlertDialog("Didn't find any article")
