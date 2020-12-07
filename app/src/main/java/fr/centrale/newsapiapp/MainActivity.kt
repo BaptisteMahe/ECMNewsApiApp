@@ -65,12 +65,13 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
     override fun onArticleClick(position: Int) {
         val article = articlesData[position]
         val monIntent = Intent(this, ArticleActivity::class.java)
-        monIntent.putExtra("title", "title")
-        monIntent.putExtra("author", "author")
-        monIntent.putExtra("date", "date")
-        monIntent.putExtra("source", "description")
-        monIntent.putExtra("urlToImage", "urlToImage")
-        monIntent.putExtra("link", "link")
+        monIntent.putExtra("title", article.title)
+        monIntent.putExtra("author", article.author)
+        monIntent.putExtra("date", article.date)
+        monIntent.putExtra("sourceName", article.sourceName)
+        monIntent.putExtra("description", article.description)
+        monIntent.putExtra("link", article.link)
+        monIntent.putExtra("urlToImage", article.urlToImage)
         startActivity(monIntent)
     }
 
@@ -125,7 +126,8 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
         articlesData = ArrayList()
             for (index in 0 until articles.length()) {
                 val article = articles.getJSONObject(index)
-                val articlePreview = ArticlePreview(article.getString("title"), article.getString("author"), article.getString("publishedAt"), article.getString("urlToImage"))
+                Log.d("ARTICLE", article.toString())
+                val articlePreview = ArticlePreview(article.getString("title"), article.getString("author"), article.getString("publishedAt"), article.getJSONObject("source").getString("name"), article.getString("description"), article.getString("url"), article.getString("urlToImage"))
                 articlesData.add(articlePreview)
             }
     }
