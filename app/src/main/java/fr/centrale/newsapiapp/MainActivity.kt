@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ProgressBar
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -29,12 +30,15 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
     lateinit var viewManager: LinearLayoutManager
     lateinit var viewAdapter: CustomAdapter
     lateinit var loadingBar: ProgressBar
+    lateinit var alertDialogBuilder: AlertDialog.Builder
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         loadingBar = findViewById<ProgressBar>(R.id.loadingBar)
+
         queue = Volley.newRequestQueue(this)
+        setUpAlertDialogBuilder()
         getSources(savedInstanceState?.getString("sourceId"))
     }
 
@@ -81,24 +85,51 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
         startActivity(monIntent)
     }
 
+    private fun setUpAlertDialogBuilder() {
+        alertDialogBuilder = this.let {
+            AlertDialog.Builder(it)
+        }
+        alertDialogBuilder.setTitle("Something went wrong")
+                .apply{
+                    setPositiveButton("Retry") {
+                        _, _ ->
+                        getSources(currentSourceId)
+                    }
+                    setNegativeButton("Cancel") {
+                        _, _ ->
+                    }
+                }
+    }
+
+    private fun showAlertDialog(message: String) {
+        alertDialogBuilder.setMessage(message)
+        val alertDialog: AlertDialog = alertDialogBuilder.create()
+        alertDialog.show()
+    }
+
     private fun getSources(savedSourceId: String?) {
         loadingBar.isVisible = true
         val sourcesRequest = object: JsonObjectRequest(
             Request.Method.GET, SOURCES_URL, null,
             { response ->
                 sources = response.getJSONArray("sources")
-                if(savedSourceId != null) {
-                    Log.d("SOURCEID", savedSourceId)
-                    currentSourceId = savedSourceId
-                    loadingBar.isVisible = false
-                    getArticles(currentSourceId, currentPage, true)
+                if (sources.length() == 0) {
+                    showAlertDialog("Didn't find any source")
+
                 } else {
-                    currentSourceId = sources.getJSONObject(0).getString("id")
-                    getArticles(currentSourceId, currentPage, true)
+                    if(savedSourceId != null) {
+                        currentSourceId = savedSourceId
+                        loadingBar.isVisible = false
+                        getArticles(currentSourceId, currentPage, true)
+                    } else {
+                        currentSourceId = sources.getJSONObject(0).getString("id")
+                        getArticles(currentSourceId, currentPage, true)
+                    }
                 }
             },
             { error ->
-                Log.d("TAG", "Something went wrong: $error") })
+                showAlertDialog(error.toString())
+            })
         {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -116,13 +147,17 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
         val articlesRequest = object: JsonObjectRequest(
             Request.Method.GET, url + sourceId, null,
             { response ->
-                formatDataSet(response.getJSONArray("articles"), resetData)
-                Log.d("ARTICLES", response.getJSONArray("articles").toString())
-                setUpRecyclerView()
-                loadingBar.isVisible = false
+                if(response.getJSONArray("articles").length() == 0) {
+                    showAlertDialog("Didn't find any article")
+                } else {
+                    formatDataSet(response.getJSONArray("articles"), resetData)
+                    setUpRecyclerView()
+                    loadingBar.isVisible = false
+                }
             },
             { error ->
-                Log.d("TAG", "Something went wrong: $error") })
+                showAlertDialog(error.toString())
+            })
         {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -140,7 +175,6 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
         }
         for (index in 0 until articles.length()) {
             val article = articles.getJSONObject(index)
-            //Log.d("ARTICLE", article.toString())
             val articlePreview = ArticlePreview(article)
             articlesData.add(articlePreview)
         }
