@@ -2,7 +2,7 @@ package fr.centrale.newsapiapp
 
 import org.json.JSONObject
 
-class ArticlePreview {
+class ArticleInfo {
     var title: String = ""
     var author: String = ""
     var date: String = ""

@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener, Custo
     val BASE_ARTICLES_URL = "https://newsapi.org/v2/everything?apiKey=$TOKEN&language=$LANG"
 
     var sources = JSONArray()
-    var articlesData = ArrayList<ArticlePreview>()
+    var articlesData = ArrayList<ArticleInfo>()
 
     var currentSourceId = ""
     var currentPage = 1
@@ -185,11 +185,11 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener, Custo
         editor.apply()
     }
 
-    private fun formatDataSet(articles: JSONArray): ArrayList<ArticlePreview> {
-        val newArticlesData = ArrayList<ArticlePreview>()
+    private fun formatDataSet(articles: JSONArray): ArrayList<ArticleInfo> {
+        val newArticlesData = ArrayList<ArticleInfo>()
         for (index in 0 until articles.length()) {
             val article = articles.getJSONObject(index)
-            val articlePreview = ArticlePreview(article)
+            val articlePreview = ArticleInfo(article)
             newArticlesData.add(articlePreview)
         }
         return newArticlesData

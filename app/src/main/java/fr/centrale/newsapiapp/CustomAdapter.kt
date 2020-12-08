@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 
 
-class CustomAdapter(private val dataSet: ArrayList<ArticlePreview>,
+class CustomAdapter(private val dataSet: ArrayList<ArticleInfo>,
                     private val mOnArticleListener: OnArticleListener,
                     private val onBottomReachedListener: OnBottomReachedListener)
     : RecyclerView.Adapter<CustomAdapter.ViewHolder>()  {
@@ -71,7 +71,7 @@ class CustomAdapter(private val dataSet: ArrayList<ArticlePreview>,
         return position % 2
     }
 
-    fun addArticles(newDataSet: ArrayList<ArticlePreview>) {
+    fun addArticles(newDataSet: ArrayList<ArticleInfo>) {
         for (article in newDataSet) {
             dataSet.add(article)
         }
