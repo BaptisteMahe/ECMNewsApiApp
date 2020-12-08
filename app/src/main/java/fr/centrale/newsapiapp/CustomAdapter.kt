@@ -8,12 +8,13 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 
+
 class CustomAdapter(private val dataSet: ArrayList<ArticlePreview>,
-                    private val mOnArticleListener: OnArticleListener)
+                    private val mOnArticleListener: OnArticleListener,
+                    private val onBottomReachedListener: OnBottomReachedListener)
     : RecyclerView.Adapter<CustomAdapter.ViewHolder>()  {
 
     private val imgPlaceholder = Picasso.get().load("https://hlfppt.org/wp-content/uploads/2017/04/placeholder.png")
-
     class ViewHolder(view: View, onArticleListener: OnArticleListener): RecyclerView.ViewHolder(view) {
         val txtTitle: TextView
         val txtAuthor: TextView
@@ -33,6 +34,10 @@ class CustomAdapter(private val dataSet: ArrayList<ArticlePreview>,
 
     interface OnArticleListener{
         fun onArticleClick(position: Int)
+    }
+
+    interface OnBottomReachedListener {
+        fun onBottomReached(position: Int)
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
@@ -55,11 +60,20 @@ class CustomAdapter(private val dataSet: ArrayList<ArticlePreview>,
             Picasso.get().load(dataSet[position].urlToImage).into(viewHolder.imagePreview)
         }
 
+        if (position == (itemCount - 1)){
+            onBottomReachedListener.onBottomReached(position);
+        }
     }
 
     override fun getItemCount() = dataSet.size
 
     override fun getItemViewType(position: Int): Int {
         return position % 2
+    }
+
+    fun addArticles(newDataSet: ArrayList<ArticlePreview>) {
+        for (article in newDataSet) {
+            dataSet.add(article)
+        }
     }
 }
