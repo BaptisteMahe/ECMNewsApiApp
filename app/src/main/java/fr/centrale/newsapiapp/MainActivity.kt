@@ -121,14 +121,9 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener, Custo
                     if (sources.length() == 0) {
                         showAlertDialog("Didn't find any source")
                     } else {
-                        if (savedSourceId != null) {
-                            currentSourceId = savedSourceId
-                            loadingBar.isVisible = false
-                            getArticles(currentSourceId, currentPage)
-                        } else {
-                            currentSourceId = sources.getJSONObject(0).getString("id")
-                            getArticles(currentSourceId, currentPage)
-                        }
+                        currentSourceId = savedSourceId ?: sources.getJSONObject(0).getString("id")
+                        loadingBar.isVisible = false
+                        getArticles(currentSourceId, currentPage)
                     }
                 },
                 { error ->
