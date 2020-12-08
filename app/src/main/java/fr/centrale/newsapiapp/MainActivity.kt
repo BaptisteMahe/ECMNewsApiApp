@@ -1,31 +1,38 @@
 package fr.centrale.newsapiapp
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ProgressBar
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.Request
 import com.android.volley.RequestQueue
-import com.android.volley.toolbox.*
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
 import org.json.JSONArray
+
 
 class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
 
-    val SOURCES_URL = "https://newsapi.org/v2/sources?apiKey=ea196d76d15741938a5ad4f6ee7aad95&language=fr"
+    val TOKEN = "6149da01c90e4b5b80c78e2dccaef212"
+    val SOURCES_URL = "https://newsapi.org/v2/sources?apiKey=$TOKEN&language=fr"
+    val BASE_ARTICLES_URL = "https://newsapi.org/v2/everything?apiKey=$TOKEN&language=fr"
+
     var sources = JSONArray()
-    var currentSourceId = ""
-    val BASE_ARTICLES_URL = "https://newsapi.org/v2/everything?apiKey=ea196d76d15741938a5ad4f6ee7aad95&language=fr"
     var articlesData = ArrayList<ArticlePreview>()
+
+    var currentSourceId = ""
     var currentPage = 1
 
     lateinit var queue: RequestQueue
+    lateinit var preferences: SharedPreferences
     lateinit var recyclerView: RecyclerView
     lateinit var viewManager: LinearLayoutManager
     lateinit var viewAdapter: CustomAdapter
@@ -36,21 +43,17 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         loadingBar = findViewById<ProgressBar>(R.id.loadingBar)
-
+        preferences = getPreferences(MODE_PRIVATE)
         queue = Volley.newRequestQueue(this)
         setUpAlertDialogBuilder()
-        getSources(savedInstanceState?.getString("sourceId"))
+
+        getSources(preferences.getString("sourceId", null))
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         super.onCreateOptionsMenu(menu)
         menuInflater.inflate(R.menu.menu_layout, menu)
         return true
-    }
-
-    override fun onSaveInstanceState(savedInstanceState: Bundle) {
-        savedInstanceState.putString("sourceId", currentSourceId)
-        super.onSaveInstanceState(savedInstanceState)
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
@@ -91,12 +94,11 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
         }
         alertDialogBuilder.setTitle("Something went wrong")
                 .apply{
-                    setPositiveButton("Retry") {
-                        _, _ ->
+                    setPositiveButton("Retry") { _, _ ->
                         getSources(currentSourceId)
                     }
-                    setNegativeButton("Cancel") {
-                        _, _ ->
+                    setNegativeButton("Cancel") { _, _ ->
+                        loadingBar.isVisible = false
                     }
                 }
     }
@@ -110,26 +112,25 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
     private fun getSources(savedSourceId: String?) {
         loadingBar.isVisible = true
         val sourcesRequest = object: JsonObjectRequest(
-            Request.Method.GET, SOURCES_URL, null,
-            { response ->
-                sources = response.getJSONArray("sources")
-                if (sources.length() == 0) {
-                    showAlertDialog("Didn't find any source")
-
-                } else {
-                    if(savedSourceId != null) {
-                        currentSourceId = savedSourceId
-                        loadingBar.isVisible = false
-                        getArticles(currentSourceId, currentPage, true)
+                Request.Method.GET, SOURCES_URL, null,
+                { response ->
+                    sources = response.getJSONArray("sources")
+                    if (sources.length() == 0) {
+                        showAlertDialog("Didn't find any source")
                     } else {
-                        currentSourceId = sources.getJSONObject(0).getString("id")
-                        getArticles(currentSourceId, currentPage, true)
+                        if (savedSourceId != null) {
+                            currentSourceId = savedSourceId
+                            loadingBar.isVisible = false
+                            getArticles(currentSourceId, currentPage, true)
+                        } else {
+                            currentSourceId = sources.getJSONObject(0).getString("id")
+                            getArticles(currentSourceId, currentPage, true)
+                        }
                     }
-                }
-            },
-            { error ->
-                showAlertDialog(error.toString())
-            })
+                },
+                { error ->
+                    showAlertDialog(error.toString())
+                })
         {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -143,21 +144,22 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
 
     private fun getArticles(sourceId: String, page: Number, resetData: Boolean) {
         val url = "$BASE_ARTICLES_URL&sources=$sourceId&page=$page"
+        saveCurrentSourceId()
         loadingBar.isVisible = true
         val articlesRequest = object: JsonObjectRequest(
-            Request.Method.GET, url, null,
-            { response ->
-                if(response.getJSONArray("articles").length() == 0) {
-                    showAlertDialog("Didn't find any article")
-                } else {
-                    formatDataSet(response.getJSONArray("articles"), resetData)
-                    setUpRecyclerView()
-                    loadingBar.isVisible = false
-                }
-            },
-            { error ->
-                showAlertDialog(error.toString())
-            })
+                Request.Method.GET, url, null,
+                { response ->
+                    if (response.getJSONArray("articles").length() == 0) {
+                        showAlertDialog("Didn't find any article")
+                    } else {
+                        formatDataSet(response.getJSONArray("articles"), resetData)
+                        setUpRecyclerView()
+                        loadingBar.isVisible = false
+                    }
+                },
+                { error ->
+                    showAlertDialog(error.toString())
+                })
         {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -167,6 +169,13 @@ class MainActivity : AppCompatActivity(), CustomAdapter.OnArticleListener {
         }
 
         queue.add(articlesRequest)
+    }
+
+    private fun saveCurrentSourceId() {
+        super.onPause()
+        val editor = preferences.edit()
+        editor.putString("sourceId", currentSourceId)
+        editor.apply()
     }
 
     private fun formatDataSet(articles: JSONArray, resetData: Boolean) {
