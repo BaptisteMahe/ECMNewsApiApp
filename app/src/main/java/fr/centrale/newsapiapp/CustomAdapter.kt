@@ -60,7 +60,7 @@ class CustomAdapter(private val dataSet: ArrayList<ArticleInfo>,
             Picasso.get().load(dataSet[position].urlToImage).into(viewHolder.imagePreview)
         }
 
-        if (position == (itemCount - 1)){
+        if (position == (itemCount - 2)){
             onBottomReachedListener.onBottomReached(position);
         }
     }
